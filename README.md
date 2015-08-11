@@ -1,13 +1,10 @@
 # README #
 
 ### Latest Changes ###
-Added option to save out as JSON from Chargen module. (Version 1.7)
-Added basic CSV output functionality for rolled attributes. (version 1.6)
+Work in progress as I try to impose an (unneccessary) class structure into the old dice roller.
 
 ### About this repository ###
-Just a small project to learn python via D&D / Shadowrun dice rollers and character stat generators.
-
-I don't even play these games!
+Another learning project to put classes in action
 
 ### What is this repository for? ###
 
@@ -16,6 +13,4 @@ I don't even play these games!
 
 ### How do I get set up? ###
 
-* Just run any of the modules via python from within the directory.
-* There is no configuration, but the chargen.py and dddice.py modules need the dice_lib.py module in the same directory, because I pushed a bunch of grunt functions to that supplementary module.
-
+I'm trying to get a full self-contained build going, but it's not there yet.
