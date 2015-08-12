@@ -1,17 +1,8 @@
-# prototyping the current class structure:
+# wip  朗盖博 2015
 from random import randint
 prompt = '>: '
 
-# simple statprint function that can be called
-# at different stages
-def print_stats(stats):
-	atts = [
-	'Strength', 'Dexterity', 'Constitution',
-	'Intelligence', 'Wisdom', 'Charisma']
-	receipt = zip(atts, stats)
-	print 'Current Stats:'
-	print receipt
-
+# prototyping the current class structure:
 class Stats(object):
 
 	def __init__(self):
@@ -32,6 +23,7 @@ class Stats(object):
 		self.mulligan = [self.basestat() for i in range(6)]
 		return self.mulligan
 
+# define the Race classes
 class Dragonborn(object):
 	def __init__(self, stats):
 		self.stats = stats
@@ -40,6 +32,38 @@ class Dragonborn(object):
 
 	def output(self):
 		return self.stats, self.indices, self.values
+
+# map the classes as constants!!
+race_choices = { 1:Dragonborn }
+# pop these back in later
+''', 2:Dwarf, 3:Elf,
+4:Gnome, 5:Halfling, 6:Half-Elf,
+7:Half-Orc, 8:Human, 9:Tiefling'''
+
+# simple statprint function that can be called
+# at different stages
+def print_stats(stats):
+	atts = [
+	'Strength', 'Dexterity', 'Constitution',
+	'Intelligence', 'Wisdom', 'Charisma']
+	receipt = zip(atts, stats)
+	print 'Current Stats:'
+	print receipt
+
+# take user selection and return
+# the Class from race_choices
+def picker():
+	race_strings = [
+		 '1. Dragonborn',
+		'2. Dwarf', '3. Elf',
+		'4. Gnome', '5. Halfling',
+		'6. Half-Elf', '7. Half-Orc',
+		'8. Human', '9. Tiefling'
+		]
+	print race_strings
+	choice = int(raw_input(prompt))
+	val = race_choices[choice]
+	return val
 
 # take (current_)stats and add Racial bonuses
 def plus(stats, indices, values):
@@ -56,34 +80,23 @@ base = Stats()
 current_stats = base.get_rolls()
 print_stats(current_stats)
 
-# temporary railroading of the intended choice flow
-choice = Dragonborn(current_stats)
-data = choice.output()
-outcome = plus(*data)
-print_stats(outcome)
+# might need to revert to base_stats later
+base_stats = []
+for i in range(len(current_stats)):
+	base_stats.append(current_stats[i])
 
-################################
-#  BELOW LIES A GARBAGE DUMP!  #
-################################
+print 'Now choose a race.'
+# chosen_race = binds the race Class itself
+# rolled_instance = mints an instance of the
+# chosen Class
+chosen_race = picker()
+rolled_instance = chosen_race(current_stats)
 
-# I DEMAND that this dictionary works
-race_choices = {
-	1:'Dragonborn', 2:'Dwarf', 3:'Elf',
-	4:'Gnome', 5:'Halfling', 6:'Half-Elf',
-	7:'Half-Orc', 8:'Human', 9:'Tiefling'
-	}
 
-# a disgusting and failed attempt at not using a big if block for this choice.
-'''
-def picker():
-	print race_choices
-	print 'Pick a number to select a class.'
-	choice = int(raw_input(prompt))
-	val = race_choices.get[choice]
-	# horrible
-	wrap = '%s(current_stats)'
-	exec wrap
-'''
+bonus = rolled_instance.output()
+current_stats = plus(*bonus)
+print_stats(current_stats)
+
 # I would like to enforce this base class above the
 # race subclasses, just for the sake of doing it.
 '''
