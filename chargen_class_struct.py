@@ -312,65 +312,17 @@ def export_csv(block):
 	print "\n'scroll.csv' overwritten with latest stats.\n"
 '''
 
-
-# endgame option loop - reroll, change race, export, or quit?
-def options(current_stats, base_stats):
+def options():
 	global chosen_race, race_instance, bonus
 	options_list = [
 	'!1. Reroll base stats but keep race',
 	'!2. Change race but keep base stats',
-	'!3. Export these stats to json file',
-	#'!4. Export these stats to csv file',
-	'!4. Quit'
+	'!3. Quit'
 	]
 	for line in options_list:
 		chunk = line.replace('!','       ')
 		print chunk
 	val = int(raw_input(prompt))
-	if val == 1:
-		# use Parent.reroll() and reassign Child.stats to cleanly reroll base stats.
-		temp_stats = base.reroll()
-		base_stats = []
-		for i in range(len(temp_stats)):
-			base_stats.append(temp_stats[i])
-		race_instance.stats = temp_stats
-		current_stats = plus(temp_stats, race_instance.indices, race_instance.values)
-		print 'Rerolled Stats for your %s:' %race_instance.race
-		print_stats(current_stats)
-		print 'Now what?\n'
-		options(current_stats, base_stats)
-	elif val == 2:
-		# clone base_stats to reset current_stats every time
-		temp_stats = []
-		for i in range(len(base_stats)):
-			temp_stats.append(base_stats[i])
-		current_stats = temp_stats
-		print 'Base stats:'
-		print_stats(current_stats)
-		chosen_race = picker()
-		race_instance = chosen_race(current_stats)
-		bonus = race_instance.output()
-		current_stats = plus(*bonus)
-		print 'New stats for your %s:' %race_instance.race
-		print_stats(current_stats)
-		print 'Now what?\n'
-		options(current_stats, base_stats)
-	elif val == 3:
-		block = print_stats(current_stats)
-		export_json(block)
-		print 'Now what?\n'
-		options(current_stats, base_stats)
-	#elif val == 4:
-		#block = print_stats(current_stats)
-		#export_csv(block)
-		#print 'Now what?\n'
-		#options(current_stats, base_stats)
-	elif val == 4:
-		exit(0)
-	else:
-		print '\nWhat?\nTry again.\n'
-		options(current_stats, base_stats)
-
 
 ###### Make it work!
 
@@ -407,25 +359,3 @@ print_stats(base_stats)
 print '\nRacial bonuses applied.'
 print 'New stats for your %s:' %race_instance.race
 print_stats(current_stats)
-# Reroll, change race, export, or quit?
-print 'Now what?\n'
-options(current_stats, base_stats)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-###
