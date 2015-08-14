@@ -1,10 +1,13 @@
 # coding: utf8
 # wip  朗盖博 2015
 from random import randint
+from sys import exit
+import json
+import csv
+
 prompt = '>: '
 
-# Inits with a list of rolled stats,
-# which can be retrieved or rerolled
+# Inits with a list of rolled stats, which can be retrieved or rerolled
 class Stats(object):
 	def __init__(self):
 		self.rolls = [self.basestat() for i in range(6)]
@@ -18,12 +21,13 @@ class Stats(object):
 		return self.rolls
 	# might need this later!
 	def reroll(self):
-		self.mulligan = [self.basestat() for i in range(6)]
-		return self.mulligan
+		self.rolls = [self.basestat() for i in range(6)]
+		return self.rolls
 
 # Base class serves 2 purposes:
 # 1. Teaching me basic inheritance
-# 2. output() method call so I don't have to write it 9x
+# 2. output() method call so I don't have to duplicate it
+# across all the base classes.
 class Race(object):
 	def __init__(self, stats):
 		self.stats = stats
@@ -31,8 +35,7 @@ class Race(object):
 		self.subrace()
 		return self.stats, self.indices, self.values
 
-# Subclasses all call Parent.__init__ to mint themselves
-# with inherited stats.
+# Subclasses all call Parent.__init__ to mint themselves with inherited stats.
 class Dragonborn(Race):
 	def __init__(self, stats):
 		Race.__init__(self, stats)
@@ -42,9 +45,8 @@ class Dragonborn(Race):
 		self.indices = (0,5)
 		self.values = (2,1)
 
-# Some subclasses require user input to define
-# bonuses, so the parent class triggers this with the
-# output() method.
+# Some subclasses require user input to define bonuses,
+# so the parent class triggers this with the output() method.
 class Dwarf(Race):
 	def __init__(self, stats):
 		Race.__init__(self, stats)
@@ -134,6 +136,8 @@ class Halfling(Race):
 			print 'What?'
 			self.subrace()
 
+# The Half_Elf class involves custom stats within some limits,
+# so it has some logic checks
 class Half_Elf(Race):
 	def __init__(self, stats):
 		Race.__init__(self, stats)
@@ -141,8 +145,9 @@ class Half_Elf(Race):
 	def subrace(self):
 		self.race = 'Half-Elf'
 		print_stats(self.stats)
-		print '\nHalf-Elves get +2 Cha, as well as +1 to two separate stats of your choice.'
-		print '\nNow, type the abbreviated name of the first stat to +1 (i.e. "str").'
+		print 'Half-Elves get +2 Cha, as well as +1 to two separate stats of your choice.'
+		print 'Now, type the abbreviated name of the first stat to +1'
+		print 'Example: "str" for Strength, "dex" for Dexterity.'
 		self.first = str(raw_input(prompt))
 		print '\n...now type the second stat to +1.'
 		print 'Don\'t double up!'
@@ -177,7 +182,6 @@ class Half_Elf(Race):
 			self.indices = [stat1,stat2,5]
 			self.values = [1,1,2]
 
-
 class Half_Orc(Race):
 	def __init__(self, stats):
 		Race.__init__(self, stats)
@@ -205,7 +209,8 @@ class Tiefling(Race):
 		self.indices = (3,5)
 		self.values = (1,2)
 
-# map the classes as constants. I refused to write a big if block :)
+# map the classes as constants so I can call them with ease later.
+# I refuse to write an if block :)
 race_choices = {
 	1:Dragonborn,
 	2:Dwarf,
@@ -218,34 +223,63 @@ race_choices = {
 	9:Tiefling
 	}
 
+# simple statprint function that can be called at different stages
+def print_stats(stats):
+	atts = [
+		'Strength    ',
+		'Dexterity   ',
+		'Constitution',
+		'Intelligence',
+		'Wisdom      ',
+		'Charisma    ']
+	mod_words = []
+	for i in range(6):
+		word = ' Mod:'
+		mod_words.append(word.rjust(8, ' '))
+	mods = []
+	for stat in stats:
+		if stat == 9:
+			mod = -1
+			mods.append(mod)
+		else:
+			mod = (stat - 10) / 2
+			mods.append(mod)
+	modtotal = sum(mods)
+	receipt = zip(atts, stats, mod_words, mods)
+	print ''
+	for line in receipt:
+		temp = []
+		for chunk in line:
+			temp.append(str(chunk))
+		attempt = ' '.join(temp)
+		print attempt.center(40)
+	print '\nTotal mods = %r\n' % modtotal
+	if modtotal >=3 and modtotal <= 8:
+		print 'Decent stats.\n'
+	elif modtotal > 8:
+		print 'Great stats!\n'
+	else:
+		print 'Shit stats!\n'
+
 # take user selection and return the Class from race_choices
 def picker():
 	race_strings = [
-		'1. Dragonborn: +2 Str and +1 Cha',
-		'2. Dwarf: +2 Con, and +2 Str or +1 Wis',
-		'3. Elf: +2 Dex, and +1 Int, Wis, or Cha',
-		'4. Gnome: +2 Int, and +1 Dex or Con',
-		'5. Halfling: +2 Dex, and +1 Cha or Con',
-		'6. Half-Elf: +2 Cha and +1 to any two stats',
-		'7. Half-Orc: +2 Str and +1 Con',
-		'8. Human: +1 to all stats',
-		'9. Tiefling: +1 Int and +2 Cha'
+		'!1. Dragonborn: +2 Str and +1 Cha',
+		'!2. Dwarf: +2 Con, and +2 Str or +1 Wis',
+		'!3. Elf: +2 Dex, and +1 Int, Wis, or Cha',
+		'!4. Gnome: +2 Int, and +1 Dex or Con',
+		'!5. Halfling: +2 Dex, and +1 Cha or Con',
+		'!6. Half-Elf: +2 Cha and +1 to any two stats',
+		'!7. Half-Orc: +2 Str and +1 Con',
+		'!8. Human: +1 to all stats',
+		'!9. Tiefling: +1 Int and +2 Cha'
 		]
-	for chunk in race_strings:
+	for line in race_strings:
+		chunk = line.replace('!','       ')
 		print chunk
 	choice = int(raw_input(prompt))
 	val = race_choices[choice]
 	return val
-
-# simple statprint function that can be called
-# at different stages
-def print_stats(stats):
-	atts = [
-	'Strength', 'Dexterity', 'Constitution',
-	'Intelligence', 'Wisdom', 'Charisma']
-	receipt = zip(atts, stats)
-	for chunk in receipt:
-		print chunk
 
 # take (current_)stats and add Racial bonuses
 def plus(stats, indices, values):
@@ -257,26 +291,141 @@ def plus(stats, indices, values):
 		new_stats[i] += dummy_list[i]
 	return new_stats
 
-# Mint the class, peel off a layer, and print a receipt.
+'''
+# export to json - needs work
+def export_json(block):
+	f = open("scroll.json", 'wb')
+	chunk = str(json.dumps(block))
+	f.write(chunk)
+	f.close()
+	print "\n'scroll.json' overwritten with latest stats.\n"
+
+# export to csv - needs work
+def export_csv(block):
+	#block = print_stats(current_stats)
+	print type(block)
+	fo = open("scroll.csv", 'wb')
+	wr = csv.writer(fo, quoting=csv.QUOTE_ALL)
+	for row in block:
+		wr.writerow(row)
+	fo.close()
+	print "\n'scroll.csv' overwritten with latest stats.\n"
+'''
+
+
+# endgame option loop - reroll, change race, export, or quit?
+def options(current_stats, base_stats):
+	global chosen_race, race_instance, bonus
+	options_list = [
+	'!1. Reroll base stats but keep race',
+	'!2. Change race but keep base stats',
+	'!3. Export these stats to json file',
+	#'!4. Export these stats to csv file',
+	'!4. Quit'
+	]
+	for line in options_list:
+		chunk = line.replace('!','       ')
+		print chunk
+	val = int(raw_input(prompt))
+	if val == 1:
+		# use Parent.reroll() and reassign Child.stats to cleanly reroll base stats.
+		temp_stats = base.reroll()
+		base_stats = []
+		for i in range(len(temp_stats)):
+			base_stats.append(temp_stats[i])
+		race_instance.stats = temp_stats
+		current_stats = plus(temp_stats, race_instance.indices, race_instance.values)
+		print 'Rerolled Stats for your %s:' %race_instance.race
+		print_stats(current_stats)
+		print 'Now what?\n'
+		options(current_stats, base_stats)
+	elif val == 2:
+		# clone base_stats to reset current_stats every time
+		temp_stats = []
+		for i in range(len(base_stats)):
+			temp_stats.append(base_stats[i])
+		current_stats = temp_stats
+		print 'Base stats:'
+		print_stats(current_stats)
+		chosen_race = picker()
+		race_instance = chosen_race(current_stats)
+		bonus = race_instance.output()
+		current_stats = plus(*bonus)
+		print 'New stats for your %s:' %race_instance.race
+		print_stats(current_stats)
+		print 'Now what?\n'
+		options(current_stats, base_stats)
+	elif val == 3:
+		block = print_stats(current_stats)
+		export_json(block)
+		print 'Now what?\n'
+		options(current_stats, base_stats)
+	#elif val == 4:
+		#block = print_stats(current_stats)
+		#export_csv(block)
+		#print 'Now what?\n'
+		#options(current_stats, base_stats)
+	elif val == 4:
+		exit(0)
+	else:
+		print '\nWhat?\nTry again.\n'
+		options(current_stats, base_stats)
+
+
+###### Make it work!
+
+# Base stats: make a mold, mint a coin, print a receipt
 base = Stats()
 current_stats = base.get_rolls()
 print 'Base stats:'
 print_stats(current_stats)
 
-# might need to revert to base_stats later
+# Make a totally separate copy In case we need to revert to base_stats
 base_stats = []
 for i in range(len(current_stats)):
 	base_stats.append(current_stats[i])
 
+# Race selection: make a mold, mint a coin.
+# The Race Subclasses come into being with current_stats inherited from the
+# Race parent class, thanks to their __init__.
 print 'Now choose a race.'
 chosen_race = picker()
-rolled_instance = chosen_race(current_stats)
+race_instance = chosen_race(current_stats)
 
-bonus = rolled_instance.output()
+# Confirm bonuses: calls Parent.output() on the instance of the Child.
+# This calls Child.subrace() on self, which defines bonuses and in some
+# cases, takes input to do so. Parent.output() then returns those values,
+# which are bound to bonus.
+bonus = race_instance.output()
+
+# plus() unpacks the bonus values and adds them to the base stats.
 current_stats = plus(*bonus)
 
+# Show the changes
 print '\nBase Stats were:'
 print_stats(base_stats)
 print '\nRacial bonuses applied.'
-print 'New stats for your %s:' %rolled_instance.race
+print 'New stats for your %s:' %race_instance.race
 print_stats(current_stats)
+# Reroll, change race, export, or quit?
+print 'Now what?\n'
+options(current_stats, base_stats)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+###
