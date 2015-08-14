@@ -2,8 +2,6 @@
 # wip  朗盖博 2015
 from random import randint
 from sys import exit
-import json
-import csv
 
 prompt = '>: '
 
@@ -291,27 +289,6 @@ def plus(stats, indices, values):
 		new_stats[i] += dummy_list[i]
 	return new_stats
 
-'''
-# export to json - needs work
-def export_json(block):
-	f = open("scroll.json", 'wb')
-	chunk = str(json.dumps(block))
-	f.write(chunk)
-	f.close()
-	print "\n'scroll.json' overwritten with latest stats.\n"
-
-# export to csv - needs work
-def export_csv(block):
-	#block = print_stats(current_stats)
-	print type(block)
-	fo = open("scroll.csv", 'wb')
-	wr = csv.writer(fo, quoting=csv.QUOTE_ALL)
-	for row in block:
-		wr.writerow(row)
-	fo.close()
-	print "\n'scroll.csv' overwritten with latest stats.\n"
-'''
-
 def options():
 	global chosen_race, race_instance, bonus
 	options_list = [
@@ -325,7 +302,6 @@ def options():
 	val = int(raw_input(prompt))
 
 ###### Make it work!
-
 # Base stats: make a mold, mint a coin, print a receipt
 base = Stats()
 current_stats = base.get_rolls()
